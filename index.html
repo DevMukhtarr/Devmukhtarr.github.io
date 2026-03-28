@@ -1,11 +1,409 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Empty for now</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>0xResearcher — Web3 Security</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:       #0a0a08;
+      --surface:  #111110;
+      --border:   #2a2a26;
+      --accent:   #c8f03e;
+      --accent2:  #3ef0a0;
+      --muted:    #5a5a52;
+      --text:     #e8e8e0;
+      --text-dim: #9a9a90;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 14px;
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    /* ── noise overlay ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.5;
+    }
+
+    /* ── layout ── */
+    .wrap {
+      position: relative;
+      z-index: 1;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ── header / hero ── */
+    header {
+      padding: 72px 0 56px;
+      border-bottom: 1px solid var(--border);
+      animation: fadeUp .6s ease both;
+    }
+
+    .tag {
+      display: inline-block;
+      font-size: 11px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      padding: 3px 10px;
+      border-radius: 2px;
+      margin-bottom: 20px;
+    }
+
+    .hero-name {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(40px, 8vw, 72px);
+      font-weight: 900;
+      line-height: 1.0;
+      letter-spacing: -.02em;
+      color: var(--text);
+    }
+
+    .hero-name span { color: var(--accent); }
+
+    .hero-sub {
+      margin-top: 18px;
+      color: var(--text-dim);
+      max-width: 520px;
+      font-size: 13px;
+    }
+
+    /* social links */
+    .socials {
+      display: flex;
+      gap: 24px;
+      margin-top: 32px;
+      flex-wrap: wrap;
+    }
+
+    .social-link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      color: var(--text-dim);
+      font-size: 13px;
+      transition: color .2s;
+    }
+
+    .social-link:hover { color: var(--accent); }
+
+    .social-link svg {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      fill: currentColor;
+    }
+
+    /* ── stats row ── */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      margin: 48px 0;
+      animation: fadeUp .6s .15s ease both;
+    }
+
+    .stat {
+      background: var(--surface);
+      padding: 22px 20px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .stat-label {
+      font-size: 11px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* ── section ── */
+    section { padding: 48px 0; border-bottom: 1px solid var(--border); }
+
+    .section-header {
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .section-count {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: .08em;
+    }
+
+    /* ── about ── */
+    .about-text {
+      color: var(--text-dim);
+      max-width: 680px;
+      font-size: 13px;
+    }
+
+    .about-text p + p { margin-top: 14px; }
+
+    /* ── findings table ── */
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      animation: fadeUp .6s .25s ease both;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12.5px;
+    }
+
+    thead tr {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 10px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background .15s;
+    }
+
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(200, 240, 62, .03); }
+
+    td {
+      padding: 14px 16px;
+      color: var(--text-dim);
+      vertical-align: middle;
+    }
+
+    td:first-child { color: var(--text); font-weight: 500; }
+
+    /* category badge */
+    .badge {
+      display: inline-block;
+      padding: 2px 9px;
+      border-radius: 2px;
+      font-size: 10px;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .badge-audit    { background: rgba(200,240,62,.12); color: var(--accent);  border: 1px solid rgba(200,240,62,.25); }
+    .badge-bounty   { background: rgba(62,240,160,.10); color: var(--accent2); border: 1px solid rgba(62,240,160,.22); }
+    .badge-ctf      { background: rgba(180,120,255,.12); color: #c87eff;       border: 1px solid rgba(180,120,255,.25); }
+
+    /* rank pill */
+    .rank {
+      display: inline-block;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    /* vuln severity */
+    .sev { font-weight: 500; }
+    .sev-c { color: #ff5050; }
+    .sev-h { color: #ff8f3e; }
+    .sev-m { color: #f0d23e; }
+    .sev-l { color: var(--accent2); }
+
+    /* lang tag */
+    .lang {
+      font-size: 11px;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 1px 7px;
+      border-radius: 2px;
+    }
+
+    /* ── footer ── */
+    footer {
+      padding: 36px 0;
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: .06em;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    footer a { color: var(--muted); text-decoration: none; transition: color .2s; }
+    footer a:hover { color: var(--accent); }
+
+    /* ── animations ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    section { animation: fadeUp .6s .2s ease both; }
+
+    /* ── responsive ── */
+    @media (max-width: 600px) {
+      header { padding: 48px 0 40px; }
+      .stats { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
 </head>
 <body>
-    
+
+<div class="wrap">
+
+  <!-- ── HEADER ── -->
+  <header>
+    <div class="tag">Web3 Security Researcher</div>
+    <h1 class="hero-name">Dev<span>Mukhtar</span></h1>
+    <p class="hero-sub">
+      Smart contract auditor, Turning vulnerabilities into lessons.
+    </p>
+
+    <div class="socials">
+      <!-- X / Twitter -->
+      <a class="social-link" href="https://x.com/devmukhtar" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.747l7.73-8.835L1.254 2.25H8.08l4.253 5.622L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z"/>
+        </svg>
+        @devmukhtar
+      </a>
+
+      <!-- Discord -->
+      <a class="social-link" href="https://discord.com/users/devmukhtar" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
+        </svg>
+        devmukhtar
+      </a>
+    </div>
+  </header>
+
+  <!-- ── STATS ── -->
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-value">16</div>
+      <div class="stat-label">Contests</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">0</div>
+      <div class="stat-label">Findings</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">0</div>
+      <div class="stat-label">Criticals</div>
+    </div>
+  </div>
+
+  <!-- ── ABOUT ── -->
+  <section>
+    <div class="section-header">
+      <h2 class="section-title">About</h2>
+    </div>
+    <div class="about-text">
+      <p>
+        Security researcher with a focus on DeFi protocol vulnerabilities.
+        I have audited lending markets, AMMs, cross-chain messaging layers, and governance
+        systems — identifying critical issues before they reach mainnet.
+      </p>
+      <p>
+        Available for private audits and collaborations
+        Reach out via X or Discord.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── FINDINGS TABLE ── -->
+  <section>
+    <div class="section-header">
+      <h2 class="section-title">Public Findings</h2>
+      <span class="section-count">contests &amp; bug bounties</span>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Project</th>
+            <th>Category</th>
+            <th>Vulnerabilities</th>
+            <th>Language</th>
+            <th>Rank</th>
+          </tr>
+        </thead>
+        <tbody>
+
+          <tr>
+            <td>Sample name</td>
+            <td><span class="badge badge-audit">Audit Contest</span></td>
+            <td>
+              <span class="sev sev-h">0 High</span>,
+              <span class="sev sev-m">0 Medium</span>
+            </td>
+            <td><span class="lang">Solidity</span></td>
+            <td><span class="rank">#1</span></td>
+          </tr>
+
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── FOOTER ── -->
+  <footer>
+    <span>© 2026 devmukhtar — All findings disclosed responsibly.</span>
+    <span>
+      <a href="https://x.com/devmukhtar" target="_blank" rel="noopener">X</a>
+      &nbsp;·&nbsp;
+      <a href="https://discord.com/users/devmukhtar" target="_blank" rel="noopener">Discord</a>
+    </span>
+  </footer>
+
+</div><!-- /wrap -->
 </body>
 </html>
